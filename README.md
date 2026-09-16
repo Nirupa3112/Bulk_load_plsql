@@ -3,7 +3,7 @@
 Steps To execute the Project:
 
 **Clone the repository:**
-git clone https://github.com/Nirupa3112/Bulk_load_plsql.git
+git clone https://github.com/Nirupa3112/Bulk_load_plsql.git 
 cd Bulk_load_plsql
 
 **Install dependencies:**
@@ -86,8 +86,7 @@ app/schemas.py
 Contains Pydantic response models.
 
 
-Design Decisions:
-
+**Design Decisions:**
 Append-only ingestion Each CSV upload creates a new ingestion record and inserts new constituent records. Existing data is not overwritten.
 
  Logical deletion Constituents are not physically deleted. Instead, `deleted_at` is populated. This preserves the original data and allows the deletion to be tracked. 
@@ -95,3 +94,16 @@ Append-only ingestion Each CSV upload creates a new ingestion record and inserts
 Psycopg instead of an ORM The application uses Psycopg 3 with parameterized SQL queries to communicate with PostgreSQL. For this relatively small service, this keeps the database interaction explicit and lightweight. 
 
 Batch insertion CSV rows are processed in batches before being inserted into PostgreSQL. This reduces the overhead of executing one database operation per CSV row.
+
+**Error Handling**
+The API validates:
+
+1. CSV file type
+2. Required CSV columns
+3. CSV data types
+4. Date values
+5. Date-range validity
+6.  Non-existing or already deleted constituent IDs
+
+Invalid requests return appropriate HTTP error responses instead of silently failing.
+Database operations are performed within transactions so that failed ingestion does not result in a partially committed upload.
