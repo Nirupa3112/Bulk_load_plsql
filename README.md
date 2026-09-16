@@ -84,3 +84,14 @@ app/repositories/
 Contains the SQL queries used to interact with PostgreSQL.
 app/schemas.py
 Contains Pydantic response models.
+
+
+Design Decisions:
+
+Append-only ingestion Each CSV upload creates a new ingestion record and inserts new constituent records. Existing data is not overwritten.
+
+ Logical deletion Constituents are not physically deleted. Instead, `deleted_at` is populated. This preserves the original data and allows the deletion to be tracked. 
+
+Psycopg instead of an ORM The application uses Psycopg 3 with parameterized SQL queries to communicate with PostgreSQL. For this relatively small service, this keeps the database interaction explicit and lightweight. 
+
+Batch insertion CSV rows are processed in batches before being inserted into PostgreSQL. This reduces the overhead of executing one database operation per CSV row.
